@@ -1,30 +1,49 @@
 const urlBase = 'https://rickandmortyapi.com/api/character/';
 
-fetch(urlBase)
-    .then(respuesta => {
-        //console.log(respuesta);
-        return respuesta.json();
-    })
+const loadData = (url, page = 1) => {
+    url += `?page=${page}`
+    fetch(url)
+        .then(respuesta => respuesta.json())
+        .then(respJson => {
+            const info = respJson.info;
+            const personajes = respJson.results;
+            console.log(info.next);
+            console.log(info.prev);
+            creaButtons();
+            if (!info.prev) {
+                document.querySelector('#prev').classList.add('disabled')
+            } else {
+                document.querySelector('#prev').classList.add('disabled')
+                //document.querySelector('#prev').setAttribute('data-id', page - 1)
+            }
+            if (!info.next) {
+                document.querySelector('#next').classList.add('disabled')
+            } else {
+                document.querySelector('#next').classList.add('disabled')
+                //document.querySelector('#next').setAttribute('data-id', page + 1)
+            }
+            console.log(personajes);
+            showCharacters(personajes);
+        })
+}
 
-    .then(respJson => {
-        const info = respJson.info;
-        const personajes = respJson.results;
-        console.log(info);
-        console.log(personajes);
-        showCharacters(personajes);
-    })
+const navegacion = (e) => {
+    e.preventDefault();
+    if (e.target.classList.contains('btn')) {
+        let page = e.target.getAttribute('data-id');
+        loadData(urlBase, page);
+    }
+}
+
+loadData(urlBase);
+
+//document.querySelector('.botones').addEventListener('click', navegacion);
 
 const showCharacters = (personajes) => {
-    /*const ul = document.createElement('ul');
-    personajes.forEach(personaje => {
-        const li = document.createElement('li');
-        li.innerHTML = `El personaje ${personaje.name} is ${personaje.status}
-                        <img src="${personaje.image}">`;
-        ul.appendChild(li);
-    });
-
-    document.querySelector('#respuesta').appendChild(ul);*/
     const contenedorRespuesta = document.querySelector('#respuesta');
+    while (contenedorRespuesta.firstChild) {
+        contenedorRespuesta.remove(contenedorRespuesta.firstChild);
+    }
     personajes.forEach(personaje => {
         contenedorRespuesta.appendChild(creaCard(personaje));
     })
@@ -32,7 +51,7 @@ const showCharacters = (personajes) => {
 
 const creaCard = (personaje) => {
     const card = document.createElement('div');
-    const html =`
+    const html = `
     <div class="card m-3" style="width: 18rem; float: left;">
     <img src="${personaje.image}" class="card-img-top" alt="...">
     <div class="card-body">
@@ -41,6 +60,23 @@ const creaCard = (personaje) => {
       <a href="#" class="btn btn-primary">Go somewhere</a>
     </div>
   </div>`;
-  card.innerHTML = html;
-  return card;
+    card.innerHTML = html;
+    return card;
+}
+
+//<button id="prev" class="btn btn-success btn-lg px-3" data-id="">Anterior</button>
+//<button id="next" class="btn btn-success btn-lg px-3" data-id="">Siguiente</button>
+const creaButtons = () => {
+    const contenedorButtons = document.querySelector('#botones');
+    contenedorButtons.innerText = '';
+    const btnPrev = document.createElement('button');
+    btnPrev.id = 'prev';
+    btnPrev.className = 'btn btn success btn-lg';
+    btnPrev.innerText = 'Anterior';
+    contenedorButtons.appendChild(btnPrev);
+    const btnNext = document.createElement('button');
+    btnNext.id = 'next';
+    btnNext.className = 'btn btn success btn-lg';
+    btnNext.innerText = 'Siguiente';
+    contenedorButtons.appendChild(btnNext);
 }
