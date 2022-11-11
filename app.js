@@ -27,6 +27,48 @@ const loadData = (url, page = 1) => {
         });
 }
 
+const loadCharacterInfo = (url, id) => {
+    let urlCharacter = `${url}${id}`;
+    console.log(urlCharacter);
+    const modalContent = document.querySelector('.modal-body');
+    modalContent.removeChild(modalContent.firstChild);
+    modalContent.innerHTML = spinner();
+    setTimeout(() => {
+        fetch(urlCharacter)
+            .then(respuesta => respuesta.json())
+            .then(personaje => {
+                //TODO: Implementar Modal con info del personaje 
+                modalContent.removeChild(modalContent.firstChild);
+                document.querySelector('.modal-tittle').innerText = personaje.name;
+                modalContent.appendChild(modalBody(personaje));
+            });
+    }, 2000);
+}
+
+const modalBody = (personaje) => {
+    const div = document.createElement('div');
+    const origen = personaje.origin.name;
+    const location = personaje.location.name;
+    const episodes =personaje.episode.length;
+    let html ='';
+    html += origen === 'unknown'? `<h4>Se desconoce su origen </h4>`:`<h4>Viene de ${origen}</h4>`;
+    html += `<h4>Se encuentra en ${location}</h4>`;
+    html +=`<img src="${personaje.image}" class="rounded mx-auto d-block">`;
+    html += `<p>Aparece en ${episodes} episodios </p>`;
+    div.innerHTML = html;
+    return div;
+}
+
+const showModal = (e) => {
+    e.preventDefault();
+    if (e.target.classList.contains('btn')) {
+        let id = e.target.getAttribute('data-id');
+        loadCharacterInfo(urlBase, id);
+    }
+}
+
+document.querySelector('#respuesta').addEventListener('click', showModal);
+
 const navegacion = (e) => {
     e.preventDefault();
     if (e.target.classList.contains('btn')) {
@@ -49,15 +91,25 @@ const showCharacters = (personajes) => {
     })
 }
 
+const spinner = () => {
+    const html =
+    `<div class="d-flex justify-content">
+        <div class="spinner-border text-info" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>`;
+    return html;
+}
+
 const creaCard = (personaje) => {
     const card = document.createElement('div');
     const html = `
     <div class="card m-3" style="width: 18rem; float: left;">
-    <img src="${personaje.image}" class="card-img-top" alt="...">
+    <img loading="lazy" src="${personaje.image}" class="card-img-top" alt="...">
     <div class="card-body">
       <h5 class="card-title">${personaje.name}</h5>
       <p class="card-text">${personaje.status}</p>
-      <a href="#" class="btn btn-primary">Go somewhere</a>
+      <button class="btn btn-primary btn-block" data-id="${personaje.id}">Ver mas</a>
     </div>
   </div>`;
     card.innerHTML = html;
